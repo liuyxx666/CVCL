@@ -151,6 +151,7 @@ if __name__ == "__main__":
 
     set_seed(args.seed)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    #这里的数据已经放入device并且是张量的形式了
     mv_data = MultiviewData(args.db, device)
     num_views = len(mv_data.data_views)
     num_samples = mv_data.labels.size
@@ -158,6 +159,7 @@ if __name__ == "__main__":
 
     input_sizes = np.zeros(num_views, dtype=int)
     for idx in range(num_views):
+        #记录每个视图的输入特征维度
         input_sizes[idx] = mv_data.data_views[idx].shape[1]
 
     t = time.time()

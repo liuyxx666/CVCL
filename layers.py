@@ -44,8 +44,8 @@ class CVCLNetwork(nn.Module):
         for idx in range(num_views):
             self.encoders.append(AutoEncoder(input_sizes[idx], dim_high_feature, dims))
             self.decoders.append(AutoDecoder(input_sizes[idx], dim_high_feature, dims))
-        self.encoders = nn.ModuleList(self.encoders)
-        self.decoders = nn.ModuleList(self.decoders)
+        self.encoders = nn.ModuleList(self.encoders) #这里已经被注册成了模块 self.encoders[0]，就是有num_views个编码器
+        self.decoders = nn.ModuleList(self.decoders) #这里已经被注册成了模块 self.encoders[0]，就是有num_views个解码器
 
         self.label_learning_module = nn.Sequential(
             nn.Linear(dim_high_feature, dim_low_feature),
