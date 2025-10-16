@@ -17,6 +17,7 @@ def pre_train(network_model, mv_data, batch_size, epochs, optimizer):
     for epoch in range(epochs):
         total_loss = 0.
         for batch_idx, (sub_data_views, _) in enumerate(mv_data_loader):
+            #就取重构的数据
             _, dvs, _ = network_model(sub_data_views)
             loss_list = list()
             for idx in range(num_views):
@@ -47,10 +48,12 @@ def contrastive_train(network_model, mv_data, mvc_loss, batch_size, lmd, beta, t
     for batch_idx, (sub_data_views, _) in enumerate(mv_data_loader):
         lbps, dvs, _ = network_model(sub_data_views)
         loss_list = list()
+        #这里没回头，所以损失函数直接是v1->v2算一次然后v2->v1算一次
         for i in range(num_views):
             for j in range(i + 1, num_views):
                 loss_list.append(lmd * mvc_loss.forward_label(lbps[i], lbps[j], temperature_l, normalized))
                 loss_list.append(beta * mvc_loss.forward_prob(lbps[i], lbps[j]))
+            #这个是算重构损失
             loss_list.append(criterion(sub_data_views[i], dvs[i]))
         loss = sum(loss_list)
         optimizer.zero_grad()
@@ -103,6 +106,7 @@ def valid(network_model, mv_data, batch_size):
     total_pred, pred_vectors, labels_vector = inference(network_model, mv_data, batch_size)
     num_views = len(mv_data.data_views)
 
+    # 这里就是输出各个视图的聚类结果
     print("Clustering results on cluster assignments of each view:")
     for idx in range(num_views):
         acc, nmi, pur, ari = calculate_metrics(labels_vector,  pred_vectors[idx])
@@ -111,6 +115,7 @@ def valid(network_model, mv_data, batch_size):
                                                                                  idx+1, pur,
                                                                                  idx+1, ari))
 
+    #
     print("Clustering results on semantic labels: " + str(labels_vector.shape[0]))
     acc, nmi, pur, ari = calculate_metrics(labels_vector, total_pred)
     print('ACC = {:.4f} NMI = {:.4f} PUR = {:.4f} ARI={:.4f}'.format(acc, nmi, pur, ari))

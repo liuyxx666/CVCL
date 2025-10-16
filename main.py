@@ -18,8 +18,8 @@ parser.add_argument('--db', type=str, default='MSRCv1',
                     choices=['MSRCv1', 'MNIST-USPS', 'COIL20', 'scene', 'hand', 'Fashion', 'BDGP'],
                     help='dataset name')
 parser.add_argument('--seed', type=int, default=10, help='Initializing random seed.')
-parser.add_argument("--mse_epochs", default=200, help='Number of epochs to pre-training.')
-parser.add_argument("--con_epochs", default=100, help='Number of epochs to fine-tuning.')
+parser.add_argument("--mse_epochs", default=200, help='Number of epochs to pre-training.')  #200
+parser.add_argument("--con_epochs", default=100, help='Number of epochs to fine-tuning.')   #100
 parser.add_argument('-lr', '--learning_rate', type=float, default=0.0005, help='Initializing learning rate.')
 parser.add_argument('--weight_decay', type=float, default=0., help='Initializing weight decay.')
 parser.add_argument("--temperature_l", type=float, default=1.0)
@@ -172,10 +172,13 @@ if __name__ == "__main__":
     optimizer = torch.optim.Adam(mnw.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
 
     if args.load_model:
-        state_dict = torch.load('./models/CVCL_pytorch_model_%s.pth' % args.db)
+        #这里如果是测试的话，这里加载模型的参数到模型中即可
+        #state_dict = torch.load('./models/CVCL_pytorch_model_%s.pth' % args.db)
+        state_dict =torch.load('./models/CVCL_pytorch_model_%s.pth' % args.db, map_location=torch.device('cpu'))
         mnw.load_state_dict(state_dict)
 
     else:
+        #预训练
         pre_train_loss_values = pre_train(mnw, mv_data, args.batch_size, args.mse_epochs, optimizer)
 
         # sio.savemat('pre_train_loss_%s.mat' % args.db, {'data': pre_train_loss_values})
@@ -200,7 +203,7 @@ if __name__ == "__main__":
         print("Total time elapsed: {:.2f}s".format(time.time() - t))
 
         if args.save_model:
-            torch.save(mnw.state_dict(), './models/CVCL_pytorch_model_%s.pth' % args.db)
+            torch.save(mnw.state_dict(), './models_by_me/CVCL_pytorch_model_%s.pth' % args.db)
 
     acc, nmi, pur, ari = valid(mnw, mv_data, args.batch_size)
     with open('result_%s.txt' % args.db, 'a+') as f:

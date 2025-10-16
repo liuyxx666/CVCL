@@ -110,7 +110,7 @@ def get_multiview_data(mv_data, batch_size):
     num_views = len(mv_data.data_views)
     num_samples = len(mv_data.labels)
     num_clusters = len(np.unique(mv_data.labels))
-
+    #这里就是取数据了，比如之前是三个试图，每个都是500*256，取完就是batch_size*256，label也是batch_size
     mv_data_loader = torch.utils.data.DataLoader(
         mv_data,
         batch_size=batch_size,
